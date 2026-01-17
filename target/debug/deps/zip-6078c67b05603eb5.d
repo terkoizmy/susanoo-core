@@ -1,0 +1,20 @@
+/home/terkoiz/hack/aetheris/target/debug/deps/zip-6078c67b05603eb5.d: /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/lib.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/compression.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/cp437.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/crc32.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/extra_fields/mod.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/extra_fields/extended_timestamp.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/read.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/read/stream.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/result.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/spec.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/types.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/write.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/zipcrypto.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/unstable.rs
+
+/home/terkoiz/hack/aetheris/target/debug/deps/libzip-6078c67b05603eb5.rmeta: /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/lib.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/compression.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/cp437.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/crc32.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/extra_fields/mod.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/extra_fields/extended_timestamp.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/read.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/read/stream.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/result.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/spec.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/types.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/write.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/zipcrypto.rs /home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/unstable.rs
+
+/home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/lib.rs:
+/home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/compression.rs:
+/home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/cp437.rs:
+/home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/crc32.rs:
+/home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/extra_fields/mod.rs:
+/home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/extra_fields/extended_timestamp.rs:
+/home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/read.rs:
+/home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/read/stream.rs:
+/home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/result.rs:
+/home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/spec.rs:
+/home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/types.rs:
+/home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/write.rs:
+/home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/zipcrypto.rs:
+/home/terkoiz/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zip-1.1.4/src/unstable.rs:
+
+# env-dep:CARGO_PKG_VERSION=1.1.4
