@@ -5,7 +5,7 @@ Autonomous AI-Powered Robotics for Hydrogen Infrastructure Inspection
 ## 📌 Project Overview
 AETHERIS (System for Unified Surveillance and Autonomous Network Observation of Over-ground Energy) is an advanced simulation framework designed for the autonomous inspection of Green Hydrogen pipelines.
 
-Developed for the lablab.ai "AI Meets Robotics" Hackathon, this project addresses the critical safety challenges of the hydrogen economy. By utilizing AI-driven robotics, SUSANOO-CORE automates the detection of structural anomalies and gas leaks in high-pressure environments, minimizing human risk and ensuring infrastructure integrity.
+Developed for the lablab.ai "AI Meets Robotics" Hackathon, this project addresses the critical safety challenges of the hydrogen economy. By utilizing AI-driven robotics, AETHERIS automates the detection of structural anomalies and gas leaks in high-pressure environments, minimizing human risk and ensuring infrastructure integrity.
 
 ## 🚀 The Problem
 As the world shifts toward Green Hydrogen, maintaining vast pipeline networks becomes a major challenge. Hydrogen is a highly volatile gas; even microscopic leaks can lead to significant hazards. Manual inspections are:
@@ -14,7 +14,7 @@ As the world shifts toward Green Hydrogen, maintaining vast pipeline networks be
 - Inefficient over long distances in remote areas.
 
 ## 🛠 Our Solution
-SUSANOO-CORE provides a simulated autonomous robot agent capable of:
+AETHERIS provides a simulated autonomous robot agent capable of:
 - Predictive Patrol: Navigating pipeline routes autonomously using AI-driven pathfinding.
 - Anomaly Detection: Using computer vision and sensor fusion to identify cracks, corrosion, and pressure irregularities.
 - Real-time Monitoring: Reporting health metrics and location data back to a centralized control hub.
