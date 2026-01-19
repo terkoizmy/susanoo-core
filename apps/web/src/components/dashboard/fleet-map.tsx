@@ -80,7 +80,9 @@ function UnitMarker({
         <Float speed={2} rotationIntensity={0} floatIntensity={unit.type === "drone" ? 0.3 : 0}>
             <group position={unit.position} onClick={onClick}>
                 <mesh ref={meshRef}>
-                    {unit.type === "rover" ? <boxGeometry args={[0.3, 0.2, 0.4]} /> : <octahedronGeometry args={[0.2]} />}
+                    {unit.type === "rover" && <boxGeometry args={[0.3, 0.2, 0.4]} />}
+                    {unit.type === "drone" && <octahedronGeometry args={[0.2]} />}
+                    {unit.type === "crawler" && <capsuleGeometry args={[0.1, 0.2, 4, 8]} />}
                     <meshStandardMaterial
                         color={isSelected ? color : "#475569"}
                         emissive={color}
@@ -114,8 +116,46 @@ function Scene({
 }) {
     return (
         <>
-            <ambientLight intensity={0.3} />
-            <directionalLight position={[10, 10, 5]} intensity={0.5} />
+            {/* Enhanced Lighting Setup */}
+            <ambientLight intensity={0.6} color="#e0f2fe" />
+            <hemisphereLight
+                args={["#87ceeb", "#1e3a5f", 0.8]}
+                position={[0, 20, 0]}
+            />
+
+            {/* Main directional light (sun-like) */}
+            <directionalLight
+                position={[10, 15, 8]}
+                intensity={1.2}
+                color="#ffffff"
+                castShadow
+            />
+
+            {/* Fill lights for even illumination */}
+            <directionalLight
+                position={[-8, 10, -5]}
+                intensity={0.6}
+                color="#94a3b8"
+            />
+            <directionalLight
+                position={[0, 5, -10]}
+                intensity={0.4}
+                color="#7dd3fc"
+            />
+
+            {/* Accent spot light for dramatic effect */}
+            <spotLight
+                position={[0, 12, 0]}
+                angle={0.6}
+                penumbra={0.5}
+                intensity={1.5}
+                color="#38bdf8"
+                distance={25}
+            />
+
+            {/* Rim lights for depth */}
+            <pointLight position={[-6, 3, 4]} intensity={0.5} color="#22d3ee" distance={12} />
+            <pointLight position={[6, 3, -4]} intensity={0.5} color="#a78bfa" distance={12} />
 
             <Pipeline />
 
@@ -133,16 +173,16 @@ function Scene({
                 args={[20, 20]}
                 cellSize={1}
                 cellThickness={0.5}
-                cellColor="#1e293b"
+                cellColor="#334155"
                 sectionSize={5}
                 sectionThickness={1}
-                sectionColor="#334155"
+                sectionColor="#475569"
                 fadeDistance={30}
                 fadeStrength={1}
                 infiniteGrid
             />
 
-            <Environment preset="night" />
+            <Environment preset="city" background={false} />
             <OrbitControls
                 enablePan
                 enableZoom

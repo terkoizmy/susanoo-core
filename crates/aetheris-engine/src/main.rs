@@ -18,8 +18,9 @@ use tokio::time::{Instant, interval};
 use tracing::{debug, error, info, warn};
 
 use aetheris_shared::{
-    AnomalyReport, Command, CommandResponse, CurrentTask, HealthStatus, Heartbeat, MqttMessage,
-    PipeEnvironment, Position, RobotState, RobotStatus, RobotType, Velocity, topics,
+    AnomalyReport, AnomalyType, Command, CommandResponse, CurrentTask, FaultType, HealthStatus,
+    Heartbeat, MqttMessage, PipeEnvironment, Position, RobotState, RobotStatus, RobotType,
+    SeverityLevel, Velocity, topics,
 };
 
 // ============================================================================
@@ -126,6 +127,12 @@ pub enum EngineMessage {
     AlertReceived(AnomalyReport),
     EnvironmentReceived(PipeEnvironment),
     CommandResponseReceived(CommandResponse),
+    CommandReceived(Command, String), // (command, source)
+}
+
+/// Generate random coordinate for simulated positions
+fn rand_coord() -> f64 {
+    (rand::random::<f64>() - 0.5) * 200.0 // Range: -100 to 100
 }
 
 // ============================================================================
@@ -198,6 +205,12 @@ impl AetherisMqtt {
             .subscribe("aetheris/responses/+", QoS::AtLeastOnce)
             .await
             .context("Failed to subscribe to responses")?;
+
+        // Subscribe to commands (to handle chaos scenarios)
+        self.client
+            .subscribe(topics::COMMANDS_ALL, QoS::AtLeastOnce)
+            .await
+            .context("Failed to subscribe to commands")?;
 
         info!("Successfully subscribed to all AETHERIS topics");
         Ok(())
@@ -350,6 +363,123 @@ impl AetherisMqtt {
                 .message_tx
                 .send(EngineMessage::CommandResponseReceived(response))
                 .await;
+        } else if topic.starts_with("aetheris/commands/") {
+            // Handle incoming commands from dashboard (chaos scenarios)
+            if let Ok(msg) = serde_json::from_str::<MqttMessage<Command>>(payload_str) {
+                // Generate alert for chaos scenarios
+                if let Err(e) = self
+                    .generate_alert_for_command(&msg.payload, &msg.source)
+                    .await
+                {
+                    error!("Failed to generate alert for command: {}", e);
+                }
+                let _ = self
+                    .message_tx
+                    .send(EngineMessage::CommandReceived(msg.payload, msg.source))
+                    .await;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Generate an alert based on a command
+    pub async fn generate_alert_for_command(&self, command: &Command, source: &str) -> Result<()> {
+        let alert = match command {
+            Command::EmergencyStop => Some(AnomalyReport::new(
+                AnomalyType::Leak,
+                SeverityLevel::Critical,
+                Position::new(rand_coord(), 0.0, rand_coord()),
+                format!("PIPE-H{}", rand::random::<u8>() % 10),
+                source,
+                0.96,
+                "EMERGENCY: Hydrogen leak detected! All units halted.",
+            )),
+            Command::Investigate { anomaly_id } => Some(AnomalyReport::new(
+                AnomalyType::PressureDrop,
+                SeverityLevel::High,
+                Position::new(rand_coord(), 0.0, rand_coord()),
+                format!("PIPE-A{}", rand::random::<u8>() % 10),
+                source,
+                0.89,
+                format!("Pressure anomaly {} under investigation", anomaly_id),
+            )),
+            Command::PerformScan { scan_type } => {
+                let (anomaly_type, severity, desc) = match scan_type {
+                    aetheris_shared::ScanType::Thermal => (
+                        AnomalyType::TemperatureAnomaly,
+                        SeverityLevel::Medium,
+                        "Temperature spike detected during thermal scan",
+                    ),
+                    aetheris_shared::ScanType::Ultrasonic => (
+                        AnomalyType::WallThinning,
+                        SeverityLevel::High,
+                        "Wall thickness below threshold detected",
+                    ),
+                    aetheris_shared::ScanType::LeakDetection => (
+                        AnomalyType::Leak,
+                        SeverityLevel::High,
+                        "Potential leak signature detected",
+                    ),
+                    _ => (
+                        AnomalyType::Unknown,
+                        SeverityLevel::Info,
+                        "Scan completed - no anomalies",
+                    ),
+                };
+                Some(AnomalyReport::new(
+                    anomaly_type,
+                    severity,
+                    Position::new(rand_coord(), 0.0, rand_coord()),
+                    format!("PIPE-S{}", rand::random::<u8>() % 10),
+                    source,
+                    0.85 + (rand::random::<f64>() * 0.1),
+                    desc,
+                ))
+            }
+            Command::InjectFault { fault_type } => {
+                let (anomaly_type, severity, desc) = match fault_type {
+                    FaultType::LowBattery => (
+                        AnomalyType::Unknown,
+                        SeverityLevel::Medium,
+                        format!("Robot {} reporting critical battery level", source),
+                    ),
+                    FaultType::SensorFailure => (
+                        AnomalyType::Unknown,
+                        SeverityLevel::High,
+                        format!("Sensor malfunction detected on {}", source),
+                    ),
+                    FaultType::CommDropout => (
+                        AnomalyType::Unknown,
+                        SeverityLevel::Critical,
+                        format!("Communication lost with {}", source),
+                    ),
+                    FaultType::MotorFailure => (
+                        AnomalyType::StructuralDamage,
+                        SeverityLevel::High,
+                        format!("Motor failure reported by {}", source),
+                    ),
+                    FaultType::GpsDrift => (
+                        AnomalyType::Unknown,
+                        SeverityLevel::Low,
+                        format!("GPS accuracy degraded on {}", source),
+                    ),
+                };
+                Some(AnomalyReport::new(
+                    anomaly_type,
+                    severity,
+                    Position::new(rand_coord(), 0.0, rand_coord()),
+                    "SYSTEM",
+                    source,
+                    0.99,
+                    desc,
+                ))
+            }
+            _ => None,
+        };
+
+        if let Some(report) = alert {
+            self.publish_alert(&report).await?;
         }
 
         Ok(())
@@ -577,6 +707,13 @@ async fn main() -> Result<()> {
                         robot_id = %resp.robot_id,
                         success = resp.success,
                         "Command response received"
+                    );
+                }
+                EngineMessage::CommandReceived(cmd, source) => {
+                    info!(
+                        source = %source,
+                        "Command received from dashboard: {:?}",
+                        cmd
                     );
                 }
             }

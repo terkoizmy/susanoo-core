@@ -1,81 +1,100 @@
 "use client"
 
-import { useState } from "react"
-import { AlertTriangle, Info, XCircle, X, Bell } from "lucide-react"
+import { AlertTriangle, Info, XCircle, X, Bell, Wifi, WifiOff } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { useTelemetryStore } from "@/store/use-telemetry"
+import type { AnomalyReport, SeverityLevel } from "@/types/aetheris"
 
-interface SystemAlert {
-    id: string
-    type: "critical" | "warning" | "info"
-    title: string
-    message: string
-    timestamp: Date
-    source: string
-}
-
-const initialAlerts: SystemAlert[] = [
+// Fallback alerts when no live data
+const fallbackAlerts: AnomalyReport[] = [
     {
-        id: "1",
-        type: "critical",
-        title: "Pressure Anomaly Detected",
-        message: "Section H-7 showing abnormal pressure fluctuations. AI confidence: 94%",
-        timestamp: new Date(Date.now() - 120000),
-        source: "AI-NPU",
+        id: "fallback-1",
+        anomaly_type: "leak",
+        severity: "high",
+        position: { x: 120.5, y: 0, z: 0 },
+        section_id: "PIPE-H7",
+        detected_by: "RV-001",
+        confidence: 0.94,
+        description: "Pressure anomaly detected at Section H-7. AI confidence: 94%",
+        timestamp: Date.now() - 120000,
+        acknowledged: false,
     },
     {
-        id: "2",
-        type: "warning",
-        title: "Unit RV-003 Low Battery",
-        message: "Battery at 23%. Return to charging station recommended.",
-        timestamp: new Date(Date.now() - 300000),
-        source: "FLEET-MGR",
+        id: "fallback-2",
+        anomaly_type: "corrosion",
+        severity: "medium",
+        position: { x: 50.0, y: 0, z: 10.0 },
+        section_id: "PIPE-A3",
+        detected_by: "CR-001",
+        confidence: 0.87,
+        description: "Surface corrosion detected. Wall thickness at 92%.",
+        timestamp: Date.now() - 300000,
+        acknowledged: false,
     },
     {
-        id: "3",
-        type: "info",
-        title: "Scheduled Maintenance",
-        message: "Pipeline Section A-1 maintenance window in 2 hours.",
-        timestamp: new Date(Date.now() - 600000),
-        source: "SCHEDULER",
+        id: "fallback-3",
+        anomaly_type: "temperature_anomaly",
+        severity: "info",
+        position: { x: 200.0, y: 0, z: 0 },
+        section_id: "PIPE-B1",
+        detected_by: "DR-001",
+        confidence: 0.78,
+        description: "Scheduled maintenance window in 2 hours.",
+        timestamp: Date.now() - 600000,
+        acknowledged: false,
     },
 ]
 
 export function SystemAlerts() {
-    const [alerts, setAlerts] = useState<SystemAlert[]>(initialAlerts)
+    const liveAlerts = useTelemetryStore((s) => s.alerts)
+    const dismissAlert = useTelemetryStore((s) => s.dismissAlert)
+    const connectionStatus = useTelemetryStore((s) => s.connectionStatus)
 
-    const dismissAlert = (id: string) => {
-        setAlerts((prev) => prev.filter((a) => a.id !== id))
-    }
+    // Use live alerts if connected, otherwise show fallback
+    const alerts = connectionStatus === "connected" && liveAlerts.length > 0 ? liveAlerts : fallbackAlerts
 
-    const getAlertIcon = (type: SystemAlert["type"]) => {
-        switch (type) {
+    const getAlertIcon = (severity: SeverityLevel) => {
+        switch (severity) {
             case "critical":
+            case "high":
                 return XCircle
-            case "warning":
+            case "medium":
+            case "low":
                 return AlertTriangle
             case "info":
+            default:
                 return Info
         }
     }
 
-    const getAlertColor = (type: SystemAlert["type"]) => {
-        switch (type) {
+    const getAlertColor = (severity: SeverityLevel) => {
+        switch (severity) {
             case "critical":
+            case "high":
                 return "text-danger border-danger/30 bg-danger/10"
-            case "warning":
+            case "medium":
+            case "low":
                 return "text-warning border-warning/30 bg-warning/10"
             case "info":
+            default:
                 return "text-info border-info/30 bg-info/10"
         }
     }
 
-    const formatTime = (date: Date) => {
-        const diff = Math.floor((Date.now() - date.getTime()) / 1000)
+    const formatTime = (timestamp: number) => {
+        const diff = Math.floor((Date.now() - timestamp) / 1000)
         if (diff < 60) return `${diff}s ago`
         if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
         return `${Math.floor(diff / 3600)}h ago`
+    }
+
+    const getSourceLabel = (alert: AnomalyReport) => {
+        if (alert.detected_by.startsWith("RV-")) return "ROVER"
+        if (alert.detected_by.startsWith("DR-")) return "DRONE"
+        if (alert.detected_by.startsWith("CR-")) return "CRAWLER"
+        return "AI-NPU"
     }
 
     return (
@@ -85,7 +104,14 @@ export function SystemAlerts() {
                     <Bell className="h-3.5 w-3.5 text-muted-foreground" />
                     <span className="font-mono text-xs font-semibold text-muted-foreground tracking-wider">SYSTEM ALERTS</span>
                 </div>
-                <span className="font-mono text-[10px] text-muted-foreground">{alerts.length} ACTIVE</span>
+                <div className="flex items-center gap-2">
+                    {connectionStatus === "connected" ? (
+                        <Wifi className="h-3 w-3 text-success" />
+                    ) : (
+                        <WifiOff className="h-3 w-3 text-muted-foreground" />
+                    )}
+                    <span className="font-mono text-[10px] text-muted-foreground">{alerts.length} ACTIVE</span>
+                </div>
             </div>
 
             <ScrollArea className="flex-1">
@@ -96,19 +122,28 @@ export function SystemAlerts() {
                         </div>
                     ) : (
                         alerts.map((alert) => {
-                            const Icon = getAlertIcon(alert.type)
+                            const Icon = getAlertIcon(alert.severity)
                             return (
-                                <div key={alert.id} className={cn("p-2.5 rounded border transition-all", getAlertColor(alert.type))}>
+                                <div key={alert.id} className={cn("p-2.5 rounded border transition-all", getAlertColor(alert.severity))}>
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="flex items-start gap-2">
                                             <Icon className="h-4 w-4 mt-0.5 flex-shrink-0" />
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 mb-0.5">
-                                                    <span className="font-mono text-xs font-semibold">{alert.title}</span>
+                                                    <span className="font-mono text-xs font-semibold capitalize">
+                                                        {alert.anomaly_type.replace("_", " ")}
+                                                    </span>
+                                                    {alert.confidence && (
+                                                        <span className="font-mono text-[9px] opacity-70">
+                                                            {Math.round(alert.confidence * 100)}%
+                                                        </span>
+                                                    )}
                                                 </div>
-                                                <p className="font-mono text-[10px] opacity-80 leading-relaxed">{alert.message}</p>
+                                                <p className="font-mono text-[10px] opacity-80 leading-relaxed">{alert.description}</p>
                                                 <div className="flex items-center gap-2 mt-1.5">
-                                                    <span className="font-mono text-[9px] opacity-60">{alert.source}</span>
+                                                    <span className="font-mono text-[9px] opacity-60">{getSourceLabel(alert)}</span>
+                                                    <span className="font-mono text-[9px] opacity-60">•</span>
+                                                    <span className="font-mono text-[9px] opacity-60">{alert.section_id}</span>
                                                     <span className="font-mono text-[9px] opacity-60">•</span>
                                                     <span className="font-mono text-[9px] opacity-60">{formatTime(alert.timestamp)}</span>
                                                 </div>

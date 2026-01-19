@@ -1,11 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Activity, Wifi, Zap, Grid3X3, Maximize2, Settings, Bell, Home } from "lucide-react"
+import { Activity, Wifi, Zap, Grid3X3, Maximize2, Settings, Bell, Home, Circle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import type { FleetUnit } from "@/pages/dashboard-page"
+import { useTelemetryStore } from "@/store/use-telemetry"
+import { cn } from "@/lib/utils"
 
 interface FleetTopBarProps {
     fleet: FleetUnit[]
@@ -15,6 +17,7 @@ interface FleetTopBarProps {
 
 export function FleetTopBar({ fleet, viewMode, onViewModeChange }: FleetTopBarProps) {
     const [time, setTime] = useState(new Date())
+    const connectionStatus = useTelemetryStore((s) => s.connectionStatus)
 
     useEffect(() => {
         const timer = setInterval(() => setTime(new Date()), 1000)
@@ -23,8 +26,33 @@ export function FleetTopBar({ fleet, viewMode, onViewModeChange }: FleetTopBarPr
 
     const activeUnits = fleet.filter((u) => u.status === "active").length
     const totalUnits = fleet.length
-    const avgBattery = Math.round(fleet.reduce((sum, u) => sum + u.battery, 0) / fleet.length)
-    const avgSignal = Math.round(fleet.reduce((sum, u) => sum + u.signal, 0) / fleet.length)
+    const avgBattery = fleet.length > 0 ? Math.round(fleet.reduce((sum, u) => sum + u.battery, 0) / fleet.length) : 0
+    const avgSignal = fleet.length > 0 ? Math.round(fleet.reduce((sum, u) => sum + u.signal, 0) / fleet.length) : 0
+
+    const getConnectionStatusColor = () => {
+        switch (connectionStatus) {
+            case "connected":
+                return "text-success"
+            case "connecting":
+                return "text-warning"
+            case "disconnected":
+            case "error":
+                return "text-danger"
+        }
+    }
+
+    const getConnectionStatusText = () => {
+        switch (connectionStatus) {
+            case "connected":
+                return "LIVE"
+            case "connecting":
+                return "CONNECTING"
+            case "disconnected":
+                return "OFFLINE"
+            case "error":
+                return "ERROR"
+        }
+    }
 
     return (
         <header className="flex h-12 items-center justify-between border-b border-border bg-card px-4">
@@ -35,6 +63,16 @@ export function FleetTopBar({ fleet, viewMode, onViewModeChange }: FleetTopBarPr
                     </div>
                     <span className="font-mono text-sm font-semibold tracking-tight text-foreground">AETHERIS</span>
                 </Link>
+
+                <div className="h-4 w-px bg-border" />
+
+                {/* Connection Status */}
+                <div className="flex items-center gap-2">
+                    <Circle className={cn("h-2 w-2 fill-current", getConnectionStatusColor(), connectionStatus === "connecting" && "animate-pulse")} />
+                    <span className={cn("font-mono text-[10px] font-semibold tracking-wider", getConnectionStatusColor())}>
+                        {getConnectionStatusText()}
+                    </span>
+                </div>
 
                 <div className="h-4 w-px bg-border" />
 
